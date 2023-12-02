@@ -21,6 +21,14 @@ class Game:
                     return False
         return True
 
+    @property
+    def minimum(self) -> dict[str, int]:
+        minimum = {}
+        for colour in 'red', 'blue', 'green':
+            minimum[colour] = max(s.get(colour, 0) for s in self.subsets)
+
+        return minimum
+
 
 def parse_game(line: str) -> Game:
     line = line.strip()
@@ -53,16 +61,18 @@ def main():
 
     games = [parse_game(line) for line in lines]
 
-    max_allowed = {
-        'red': 12,
-        'green': 13,
-        'blue': 14,
-    }
+    minimum_sets = (g.minimum for g in games)
 
-    possible_games = [g for g in games if g.possible(max_allowed)]
+    total = 0
+    for s in minimum_sets:
+        p = 1
+        for c, v in s.items():
+            if v == 0:
+                continue
+            p *= v
+        total += p
 
-    sum_of_possible_game_ids = sum(g.id for g in possible_games)
-    print(f'{sum_of_possible_game_ids=}')
+    print(f'{total=}')
 
 
 if __name__ == '__main__':

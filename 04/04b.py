@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import collections
 import dataclasses
 import util
 
@@ -11,6 +12,10 @@ class Card:
     numbers: set[int]
 
     @property
+    def number(self) -> int:
+        return int(self.name.split()[-1])
+
+    @property
     def score(self):
         matches = len(self.winning_numbers & self.numbers)
 
@@ -18,6 +23,10 @@ class Card:
             return 0
 
         return pow(2, matches - 1)
+
+    @property
+    def matching(self):
+        return len(self.winning_numbers & self.numbers)
 
 
 
@@ -36,13 +45,27 @@ def main():
     with open(util.input_file) as f:
         lines = (l.strip() for l in f.readlines())
 
-    cards = (
+    cards = [
         parse_card(l) for l in lines
-    )
+    ]
 
-    score_sum = sum((c.score for c in cards))
+    card_counts = collections.defaultdict(lambda: 1)
 
-    print(f'{score_sum=}')
+    for idx, card in enumerate(cards):
+        if (matching := card.matching) == 0:
+            continue
+
+        num_cards = card_counts[idx]
+
+        for win_idx_offset in range(matching):
+            card_counts[win_idx_offset + 1 + idx] += num_cards
+
+    cards_count = 0
+
+    for idx, _ in enumerate(cards):
+        cards_count += card_counts[idx]
+
+    print(f'{cards_count=}')
 
 
 if __name__ == '__main__':
